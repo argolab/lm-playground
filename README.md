@@ -2,7 +2,7 @@
 
 Sample from language models in the style of the GPT-3 playground.
 
-<!-- screen recording of the page goes here -->
+![The playground completing a prompt, showing token probabilities, sampling six completions with a majority vote, and comparing two models](demo.gif)
 
 **Try it:** Bring your own [OpenRouter](https://openrouter.ai) key to <https://argolab.github.io/lm-playground/>, or [run it on your own GPU](#serve-your-own-models).
 
