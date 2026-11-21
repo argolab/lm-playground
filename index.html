@@ -1,0 +1,1655 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LM Playground</title>
+    <style>
+      :root {
+        --bg: #fff;
+        --fg: #1a1a1a;
+        --muted: #666;
+        --line: #ddd;
+        --rail: #f6f6f6;
+        --gen: #0b6b2e;
+        --genbg: #e3f5e8;
+        --think: #f4f0ff;
+        --accent: #002d72;
+        accent-color: var(--accent);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font:
+          14px/1.45 system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      header h1 {
+        font-size: 16px;
+        margin: 0 12px 0 0;
+      }
+      header h1 a {
+        color: inherit;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+      }
+      .logo {
+        font:
+          700 13px ui-monospace,
+          monospace;
+        background: var(--accent);
+        color: #fff;
+        border-radius: 4px;
+        padding: 2px 5px;
+        margin-right: 8px;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .seg button {
+        border: 0;
+        background: #fff;
+        padding: 4px 12px;
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: var(--fg);
+        color: #fff;
+      }
+      main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        min-height: 0;
+      }
+      #work {
+        padding: 16px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #rail {
+        background: var(--rail);
+        border-left: 1px solid var(--line);
+        padding: 12px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      label.f {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        gap: 8px;
+      }
+      label.f input[type="range"] {
+        flex: 1;
+        min-width: 0;
+        margin: 0 8px;
+      }
+      label.f input[type="number"] {
+        width: 64px;
+      }
+      label.f:has(:disabled) {
+        opacity: 0.45;
+      }
+      label.f .v {
+        width: 44px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      select,
+      input[type="text"],
+      textarea,
+      button {
+        font: inherit;
+      }
+      select,
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 4px 6px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: #fff;
+      }
+      fieldset {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        min-width: 0;
+      }
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 8px;
+        resize: vertical;
+      }
+      .btn {
+        padding: 6px 14px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
+        cursor: pointer;
+      }
+      .btn.primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-size: 12.5px;
+      }
+      .card summary {
+        cursor: pointer;
+      }
+      .card[open] summary {
+        margin-bottom: 6px;
+      }
+      #bwrap {
+        display: contents;
+      }
+      .card dl {
+        margin: 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 2px 10px;
+      }
+      .card dt {
+        color: var(--muted);
+      }
+      .card dd {
+        margin: 0;
+      }
+      #doc {
+        min-height: 220px;
+        white-space: pre-wrap;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 10px;
+        outline: none;
+        font-size: 15px;
+      }
+      #doc:focus {
+        border-color: var(--accent);
+      }
+      .gen {
+        color: var(--gen);
+        background: var(--genbg);
+      }
+      .tok {
+        border-radius: 2px;
+        cursor: default;
+      }
+      .tok:hover {
+        outline: 1px solid #999;
+      }
+      .cols {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(var(--ncol, 1), minmax(0, 1fr));
+      }
+      .col h3 {
+        font-size: 13px;
+        margin: 0 0 6px;
+        color: var(--muted);
+      }
+      .col > .btn {
+        margin: 0 6px 6px 0;
+      }
+      .grid {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      }
+      .grid.one {
+        grid-template-columns: 1fr;
+      }
+      .pane {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 8px;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 420px;
+      }
+      .pane .body {
+        white-space: pre-wrap;
+        overflow: auto;
+        font-size: 13.5px;
+        flex: 1;
+      }
+      .meta {
+        font-size: 11.5px;
+        color: var(--muted);
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .err {
+        color: #b42318;
+        white-space: pre-wrap;
+        font-size: 12px;
+      }
+      details.think {
+        background: var(--think);
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 12.5px;
+      }
+      details.think summary {
+        cursor: pointer;
+        color: #4b3d8f;
+      }
+      details.think .tbody {
+        white-space: pre-wrap;
+        max-height: 200px;
+        overflow: auto;
+        margin-top: 4px;
+      }
+      #chat {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 6px 0;
+      }
+      .msg {
+        border-left: 3px solid var(--line);
+        padding: 4px 10px;
+        white-space: pre-wrap;
+      }
+      .msg.user {
+        border-color: var(--accent);
+      }
+      .msg.assistant {
+        border-color: var(--gen);
+      }
+      .role {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      .cands .pane {
+        cursor: pointer;
+      }
+      .cands .pane:hover {
+        border-color: var(--accent);
+      }
+      dialog {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+        width: min(460px, 92vw);
+      }
+      dialog::backdrop {
+        background: rgba(0, 0, 0, 0.3);
+      }
+      dialog h3 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+      #keys label {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      #keys input {
+        width: 100%;
+        padding: 4px 6px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        margin-top: 4px;
+      }
+      #probpop {
+        position: fixed;
+        background: #222;
+        color: #fff;
+        font:
+          12px ui-monospace,
+          monospace;
+        padding: 6px 8px;
+        border-radius: 4px;
+        pointer-events: none;
+        display: none;
+        z-index: 9;
+        white-space: pre;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        font:
+          13px ui-monospace,
+          monospace;
+      }
+      .chips span {
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        padding: 0 3px;
+        background: #fafafa;
+        white-space: pre;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .tally {
+        font-size: 12.5px;
+        margin: 4px 0;
+      }
+      .tally b {
+        color: var(--gen);
+      }
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      h4 {
+        margin: 8px 0 2px;
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>
+        <a href="https://github.com/argolab/lm-playground"
+          ><span class="logo">&gt;_</span>LM Playground</a
+        >
+      </h1>
+      <div class="seg" id="modeSeg">
+        <button data-m="complete" class="on">Complete</button
+        ><button data-m="chat">Chat</button
+        ><button data-m="score">Score text</button>
+      </div>
+      <label><input type="checkbox" id="compare" /> Compare two models</label>
+      <span style="flex: 1"></span>
+      <button class="btn" id="share">Copy link to this state</button>
+      <button class="btn" id="keysButton">Set API Key</button>
+    </header>
+    <main>
+      <section id="work">
+        <div id="completeUI">
+          <div
+            id="doc"
+            contenteditable="plaintext-only"
+            spellcheck="false"
+          ></div>
+        </div>
+        <div id="chatUI" style="display: none">
+          <div class="role">system</div>
+          <textarea
+            id="system"
+            rows="2"
+            placeholder="System prompt (optional)"
+          ></textarea>
+          <div id="chat"></div>
+          <textarea
+            id="userIn"
+            rows="3"
+            placeholder="Message… (Ctrl+Enter to send)"
+          ></textarea>
+        </div>
+        <div id="scoreUI" style="display: none">
+          <textarea
+            id="scoreIn"
+            rows="8"
+            placeholder="Paste a passage. Submit colors each token by its probability under the model and reports cross-entropy and perplexity. Hover a token for what the model expected instead."
+          ></textarea>
+        </div>
+        <div class="row">
+          <button class="btn primary" id="run">Submit</button>
+          <button class="btn" id="stopButton" disabled>Stop</button>
+          <button class="btn" id="showPrompt">Show rendered prompt</button>
+          <button class="btn" id="showTokens">Show tokens</button>
+          <span class="hint" id="status"></span>
+        </div>
+        <div class="row">
+          <button
+            class="btn"
+            id="clear"
+            title="Clear prompt, conversation and outputs"
+          >
+            Clear
+          </button>
+          <button
+            class="btn"
+            id="clearTurn"
+            title="Remove the most recent exchange: the last completion, or the last user and assistant messages"
+          >
+            Clear turn
+          </button>
+          <button
+            class="btn"
+            id="clearLlm"
+            title="Remove all model-generated text, keep your prompt and messages"
+          >
+            Clear LLM text
+          </button>
+        </div>
+        <div id="inspect" class="card" style="display: none"></div>
+        <div id="out" class="cols"></div>
+      </section>
+      <aside id="rail">
+        <h4>Model</h4>
+        <select id="modelA"></select>
+        <details class="card" id="statsA"></details>
+        <div id="bwrap" style="display: none">
+          <h4>Compare with</h4>
+          <select id="modelB"></select>
+          <details class="card" id="statsB"></details>
+        </div>
+        <h4>Presets</h4>
+        <select id="preset">
+          <option value="">Load a preset prompt…</option>
+        </select>
+        <fieldset id="sampling">
+          <h4>Sampling</h4>
+          <label class="f"
+            >Temperature
+            <input
+              type="range"
+              id="temperature"
+              min="0"
+              max="2"
+              step="0.01"
+              value="1" /><span class="v"></span
+          ></label>
+          <label class="f"
+            >Max tokens
+            <input
+              type="range"
+              id="max_tokens"
+              min="1"
+              max="4096"
+              step="1"
+              value="1024" /><span class="v"></span
+          ></label>
+          <label class="f"
+            >Top P
+            <input
+              type="range"
+              id="top_p"
+              min="0"
+              max="1"
+              step="0.01"
+              value="1" /><span class="v"></span
+          ></label>
+          <label class="f"
+            >Top K (−1 = off)
+            <input
+              type="range"
+              id="top_k"
+              min="-1"
+              max="200"
+              step="1"
+              value="-1" /><span class="v"></span
+          ></label>
+          <label class="f"
+            >Completions (n)
+            <input
+              type="range"
+              id="n"
+              min="1"
+              max="16"
+              step="1"
+              value="1" /><span class="v"></span
+          ></label>
+          <label class="f"
+            >Frequency penalty
+            <input
+              type="range"
+              id="frequency_penalty"
+              min="-2"
+              max="2"
+              step="0.01"
+              value="0" /><span class="v"></span
+          ></label>
+          <label class="f"
+            >Presence penalty
+            <input
+              type="range"
+              id="presence_penalty"
+              min="-2"
+              max="2"
+              step="0.01"
+              value="0" /><span class="v"></span
+          ></label>
+          <label class="f"
+            >Seed (blank = random)
+            <input type="number" id="seed" placeholder="—"
+          /></label>
+          <label class="f" id="effortRow" style="display: none"
+            >Reasoning effort
+            <select id="reasoning_effort" style="width: auto">
+              <option>low</option>
+              <option selected>medium</option>
+              <option>high</option>
+            </select></label
+          >
+          <h4>Stop sequences</h4>
+          <input
+            type="text"
+            id="stop"
+            placeholder="comma separated, \n for newline"
+          />
+          <label class="f"
+            ><span>Show probabilities</span><input type="checkbox" id="probs"
+          /></label>
+        </fieldset>
+        <div class="hint" id="kindHint"></div>
+      </aside>
+    </main>
+    <div id="probpop"></div>
+    <dialog id="keysDialog">
+      <h3>API keys</h3>
+      <div id="keys"></div>
+      <p class="hint">This key is stored only in the browser.</p>
+      <p class="hint" id="hostedOnly" style="display: none">
+        This page offers hosted models only. To add models you serve yourself,
+        with raw completion, token probabilities, the token view and Score text,
+        <a href="https://github.com/argolab/lm-playground"
+          >run the playground on your own GPU</a
+        >.
+      </p>
+      <form method="dialog"><button class="btn primary">Done</button></form>
+    </dialog>
+    <script>
+      const PRESETS = [
+        {
+          name: "Chat on a base model (2020 playground)",
+          mode: "complete",
+          temperature: 0.9,
+          stop: "Human:",
+          prompt:
+            "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: Hello, who are you?\nAI: I am an AI created by OpenAI. How can I help you today?\nHuman: What is the capital of France, and what is it famous for?\nAI:",
+        },
+        {
+          name: "Q&A few-shot",
+          mode: "complete",
+          temperature: 0,
+          stop: "\\n",
+          prompt:
+            "Q: What is human life expectancy in the United States?\nA: Human life expectancy in the United States is 78 years.\n\nQ: Who was president of the United States in 1955?\nA: Dwight D. Eisenhower was president of the United States in 1955.\n\nQ: How many moons does Mars have?\nA:",
+        },
+        {
+          name: "Grade-school math",
+          mode: "complete",
+          temperature: 0,
+          prompt:
+            "Question: A bakery sells muffins for $3 each and cookies for $1.50 each. Lena buys 4 muffins and 6 cookies and pays with a $50 bill. How much change does she get?\nAnswer:",
+        },
+        {
+          name: "Grade-school math (chat)",
+          mode: "chat",
+          temperature: 0,
+          prompt:
+            "A bakery sells muffins for $3 each and cookies for $1.50 each. Lena buys 4 muffins and 6 cookies and pays with a $50 bill. How much change does she get?",
+        },
+        {
+          name: "Sentiment few-shot",
+          mode: "complete",
+          temperature: 0,
+          stop: "\\n",
+          prompt:
+            "Review: The plot was predictable and the acting wooden.\nSentiment: negative\n\nReview: A warm, funny film that I would happily watch again.\nSentiment: positive\n\nReview: The food arrived cold and the waiter ignored us all evening.\nSentiment:",
+        },
+        {
+          name: "Calculus one-liner (stage1 vs stage2)",
+          mode: "complete",
+          temperature: 0,
+          stop: "\\n",
+          prompt: "The derivative of x^3 + 2x with respect to x is",
+        },
+        {
+          name: "Python function (completion)",
+          mode: "complete",
+          temperature: 0.2,
+          prompt:
+            'def is_prime(n: int) -> bool:\n    """Return True if n is a prime number."""\n',
+        },
+        {
+          name: "Python function (chat)",
+          mode: "chat",
+          temperature: 0.2,
+          prompt:
+            "Write a Python function is_prime(n) that returns True if n is prime. Include a short docstring and two example calls.",
+        },
+        {
+          name: "Story opening (sampling demo)",
+          mode: "complete",
+          temperature: 1,
+          prompt: "Once upon a time, in a city where it never stopped raining,",
+        },
+        {
+          name: "Score a passage (perplexity)",
+          mode: "score",
+          temperature: 1,
+          prompt:
+            "In 1948, Claude Shannon showed that English text could be approximated by sampling from n-gram statistics. The samples were locally plausible but globally meaningless, because an n-gram model has no memory beyond its window.",
+        },
+        {
+          name: "Refusal probe (chat)",
+          mode: "chat",
+          temperature: 0.7,
+          prompt:
+            "Write a convincing five-star review for a restaurant I have never visited, so I can post it online.",
+        },
+      ];
+
+      const $ = (selector) => document.querySelector(selector);
+      const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+      let MODELS = [];
+      // True when server.py serves this page. False when the page is plain files, as on GitHub Pages:
+      // it then reads models.json itself, offers only the hosted models, and sends each request
+      // straight to the provider with the key typed into the page.
+      let hasProxy = true;
+      let mode = "complete";
+      let messages = [];
+      let aborters = [];
+
+      // ---------- models and keys ----------
+      async function loadModels() {
+        try {
+          const reply = await fetch("api/models");
+          if (!reply.ok) throw new Error(reply.status);
+          MODELS = await reply.json();
+        } catch {
+          hasProxy = false;
+          const file = await (await fetch("models.json")).json();
+          MODELS = file.models
+            .filter((m) => m.api_key_env)
+            .map((m) => ({ ...m, online: true }));
+          $("#hostedOnly").style.display = "";
+        }
+        const options = MODELS.map(
+          (m) =>
+            `<option value="${m.id}" ${m.online ? "" : "disabled"}>${m.name}${m.online ? "" : " (offline)"}</option>`,
+        ).join("");
+        $("#modelA").innerHTML = $("#modelB").innerHTML = options;
+        const [first, second] = MODELS.filter((m) => m.online);
+        if (first) $("#modelA").value = first.id;
+        if (second) $("#modelB").value = second.id;
+        renderKeys();
+        onModelChange();
+      }
+
+      const modelOf = (select) => MODELS.find((m) => m.id === select.value);
+      const can = (m, cap) => !!m && m.caps.includes(cap);
+      const selectedModels = () =>
+        $("#compare").checked
+          ? [modelOf($("#modelA")), modelOf($("#modelB"))]
+          : [modelOf($("#modelA"))];
+
+      function keyFor(env) {
+        try {
+          return (env && localStorage.getItem("key:" + env)) || "";
+        } catch {
+          return "";
+        }
+      }
+
+      // Headers for a request to the proxy, with the key typed into the page if there is one.
+      function proxyHeaders(m) {
+        const headers = { "content-type": "application/json" };
+        const key = keyFor(m.api_key_env);
+        if (key) headers["x-api-key"] = key;
+        return headers;
+      }
+
+      // One key field per provider key that models.json names, inside the "Set API Key" popup.
+      function renderKeys() {
+        const envs = [
+          ...new Set(MODELS.map((m) => m.api_key_env).filter(Boolean)),
+        ];
+        $("#keysButton").style.display = envs.length ? "" : "none";
+        const placeholder = hasProxy
+          ? "paste key, or leave blank if set on the server"
+          : "paste key";
+        $("#keys").innerHTML = envs
+          .map(
+            (env) =>
+              `<label>${env}<input type="password" data-env="${env}" value="${keyFor(env)}" placeholder="${placeholder}"></label>`,
+          )
+          .join("");
+        $$("#keys input").forEach((input) => {
+          input.oninput = () => {
+            try {
+              localStorage.setItem("key:" + input.dataset.env, input.value);
+            } catch {}
+          };
+        });
+      }
+
+      const KIND_LABELS = {
+        base: "base model: raw completion only",
+        chat: "chat model",
+        think: "reasoning model",
+      };
+
+      function renderStats(m, el) {
+        if (!m) {
+          el.innerHTML = "";
+          return;
+        }
+        const rows = Object.entries(m.stats).map(
+          ([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`,
+        );
+        el.innerHTML = `<summary>${KIND_LABELS[m.kind]}</summary><dl>${rows.join("")}</dl>`;
+      }
+
+      // Enable only the modes every selected model supports, move off a mode that is not allowed, and
+      // gray out the settings that no selected model accepts.
+      function onModelChange() {
+        const targets = selectedModels();
+        renderStats(modelOf($("#modelA")), $("#statsA"));
+        renderStats(modelOf($("#modelB")), $("#statsB"));
+        const anyBase = targets.some((m) => m && m.kind === "base");
+        const noComplete = targets.some((m) => !can(m, "completions"));
+        const noScore = targets.some((m) => !can(m, "echo"));
+        const blocked = { chat: anyBase, complete: noComplete, score: noScore };
+        $$("#modeSeg button").forEach(
+          (button) => (button.disabled = blocked[button.dataset.m]),
+        );
+        $$("#preset option").forEach(
+          (option) =>
+            (option.disabled = !!blocked[PRESETS[option.value]?.mode]),
+        );
+        if (blocked[mode]) setMode(anyBase ? "complete" : "chat");
+        $("#kindHint").textContent = anyBase
+          ? "Base models have no chat template, so only Complete mode is available. Use a few-shot prompt or the 2020 chat preset."
+          : noComplete
+            ? "This endpoint only exposes chat, so Complete and Score modes are unavailable. Locally served models have them."
+            : "Complete mode on a chat model sends your text raw, without the chat template.";
+        $("#effortRow").style.display = targets.some((m) => m && m.effort_param)
+          ? ""
+          : "none";
+        for (const [id, cap] of [
+          ...Object.entries(FIELD_CAPS),
+          ["probs", "logprobs"],
+        ]) {
+          const ignored = !targets.some((m) => can(m, cap));
+          $("#" + id).disabled = ignored;
+          $("#" + id).title = ignored
+            ? "The selected model does not accept this setting."
+            : "";
+        }
+        $("#sampling").disabled = mode === "score"; // scoring samples nothing
+        $("#showPrompt").disabled = $("#showTokens").disabled = !can(
+          modelOf($("#modelA")),
+          "tokenize",
+        );
+      }
+
+      function setMode(newMode) {
+        mode = newMode;
+        $$("#modeSeg button").forEach((b) =>
+          b.classList.toggle("on", b.dataset.m === mode),
+        );
+        $("#completeUI").style.display = mode === "complete" ? "" : "none";
+        $("#chatUI").style.display = mode === "chat" ? "" : "none";
+        $("#scoreUI").style.display = mode === "score" ? "" : "none";
+        $("#out").innerHTML = "";
+      }
+
+      // ---------- sampling settings ----------
+      const NUMS = [
+        "temperature",
+        "max_tokens",
+        "top_p",
+        "top_k",
+        "n",
+        "frequency_penalty",
+        "presence_penalty",
+      ];
+
+      function params() {
+        const p = {};
+        for (const k of NUMS) p[k] = +$("#" + k).value;
+        if ($("#seed").value !== "") p.seed = +$("#seed").value;
+        const unquote = (s) =>
+          s
+            .trim()
+            .replace(/^["']|["']$/g, "")
+            .replace(/\\n/g, "\n");
+        const stop = $("#stop").value.split(",").map(unquote).filter(Boolean);
+        if (stop.length) p.stop = stop;
+        if ($("#effortRow").style.display !== "none")
+          p.reasoning_effort = $("#reasoning_effort").value;
+        return p;
+      }
+
+      for (const k of NUMS) {
+        const el = $("#" + k);
+        const show = () => (el.nextElementSibling.textContent = el.value);
+        el.addEventListener("input", show);
+        show();
+      }
+
+      // The capability a model must list to receive each sampling field. The control that sets a field
+      // has the field's name as its id.
+      const FIELD_CAPS = {
+        temperature: "temperature",
+        top_p: "top_p",
+        top_k: "top_k",
+        frequency_penalty: "penalties",
+        presence_penalty: "penalties",
+        seed: "seed",
+        stop: "stop",
+      };
+
+      // Turn a prompt or messages plus the sampling settings into a request this model's endpoint
+      // accepts. `n` is left out here: see generate.
+      function shapeRequest(m, body) {
+        const {
+          n,
+          reasoning_effort: effort,
+          ...request
+        } = { ...body, model: m.id, stream: true };
+        for (const [field, cap] of Object.entries(FIELD_CAPS)) {
+          if (!can(m, cap)) delete request[field];
+        }
+        // Values that change nothing are dropped too, because some providers reject even those.
+        if (!(request.top_k > 0)) delete request.top_k;
+        if (!(request.top_p < 1)) delete request.top_p;
+        if (!request.frequency_penalty) delete request.frequency_penalty;
+        if (!request.presence_penalty) delete request.presence_penalty;
+        // OpenRouter takes the effort as {reasoning: {effort}}; OpenAI-style endpoints take it flat.
+        if (effort && m.effort_param === "reasoning")
+          request.reasoning = { effort };
+        else if (effort && m.effort_param) request[m.effort_param] = effort;
+        // Log-probabilities are always asked for where possible: the stats line and the sort need
+        // them. "Show probabilities" only decides whether tokens are colored.
+        if (can(m, "logprobs")) {
+          if (request.messages)
+            Object.assign(request, { logprobs: true, top_logprobs: 5 });
+          else request.logprobs = 5;
+        }
+        return request;
+      }
+
+      // ---------- output panes ----------
+      function makePane(container, label) {
+        const el = document.createElement("div");
+        el.className = "pane";
+        el.innerHTML = `<div class="meta"><b>${label}</b><span class="s"></span></div><details class="think" style="display:none"><summary>thinking</summary><div class="tbody"></div></details><div class="body"></div><div class="err"></div>`;
+        container.appendChild(el);
+        return {
+          el,
+          body: el.querySelector(".body"),
+          think: el.querySelector(".tbody"),
+          thinkBox: el.querySelector("details"),
+          stat: el.querySelector(".s"),
+          err: el.querySelector(".err"),
+          text: "",
+          reasoning: "",
+          tokens: 0,
+          lp: null, // total log-probability, or null until the endpoint reports any
+          t0: performance.now(),
+          tfirst: 0,
+        };
+      }
+
+      // Append one token. With a log-probability it can be colored, with the alternatives on hover.
+      function addToken(pane, text, lp, top, forceColor) {
+        pane.text += text;
+        pane.tokens++;
+        if (!pane.tfirst) pane.tfirst = performance.now();
+        if (lp != null) pane.lp += lp;
+        if ((forceColor || $("#probs").checked) && lp != null) {
+          const span = document.createElement("span");
+          span.className = "tok";
+          span.textContent = text;
+          const prob = Math.exp(lp);
+          span.style.background = `hsla(${120 * prob},80%,45%,${0.15 + 0.5 * (1 - prob)})`;
+          const percent = (logprob) => (100 * Math.exp(logprob)).toFixed(1);
+          span.dataset.pop =
+            `p=${percent(lp)}%  ${JSON.stringify(text)}\n` +
+            (top || [])
+              .filter((t) => t.token !== text)
+              .map(
+                (t) =>
+                  `${percent(t.logprob).padStart(5)}%  ${JSON.stringify(t.token)}`,
+              )
+              .join("\n");
+          pane.body.appendChild(span);
+        } else pane.body.appendChild(document.createTextNode(text));
+        pane.body.scrollTop = pane.body.scrollHeight;
+      }
+
+      // The completions endpoint reports alternatives as {token: logprob}; sort them, most likely first.
+      const alternatives = (byToken) =>
+        Object.entries(byToken || {})
+          .map(([token, logprob]) => ({ token, logprob }))
+          .sort((a, b) => b.logprob - a.logprob);
+
+      function updateStat(pane) {
+        if (!pane.tokens && pane.err.textContent) return; // a failed request shows only its error
+        const seconds = (performance.now() - pane.tfirst) / 1000;
+        const ttft = pane.tfirst
+          ? ((pane.tfirst - pane.t0) / 1000).toFixed(2)
+          : "–";
+        const speed = seconds > 0 ? (pane.tokens / seconds).toFixed(1) : "–";
+        pane.stat.textContent =
+          `${pane.tokens} tok · TTFT ${ttft}s · ${speed} tok/s · Σlogp ${pane.lp?.toFixed(1) ?? "–"}` +
+          (pane.finish ? ` · ${pane.finish}` : "") +
+          (pane.stopList ? ` · stop ${JSON.stringify(pane.stopList)}` : "");
+      }
+
+      document.addEventListener("mouseover", (e) => {
+        const token = e.target.closest(".tok");
+        const pop = $("#probpop");
+        if (!token) {
+          pop.style.display = "none";
+          return;
+        }
+        pop.textContent = token.dataset.pop;
+        pop.style.display = "block";
+        const box = token.getBoundingClientRect();
+        pop.style.left = Math.min(box.left, innerWidth - 320) + "px";
+        pop.style.top = box.bottom + 6 + "px";
+      });
+
+      // ---------- streaming ----------
+      // Run one model: one completion per pane. An endpoint that cannot return several completions for
+      // one request gets one request per pane instead, each with its own seed so that they differ.
+      function generate(m, body, panes) {
+        const request = shapeRequest(m, body);
+        if (panes.length > 1 && can(m, "n"))
+          return stream(m, { ...request, n: panes.length }, panes);
+        const numbered = (i) =>
+          "seed" in request ? { ...request, seed: request.seed + i } : request;
+        return Promise.all(
+          panes.map((pane, i) => stream(m, numbered(i), [pane])),
+        );
+      }
+
+      // Send one streaming request and write each choice of the reply into the pane with its index.
+      async function stream(m, request, panes) {
+        const aborter = new AbortController();
+        aborters.push(aborter);
+        panes.forEach((pane) => (pane.stopList = request.stop));
+        const key = keyFor(m.api_key_env);
+        let url = "api/generate";
+        let headers = proxyHeaders(m);
+        if (!hasProxy) {
+          url =
+            m.base_url +
+            (request.messages ? "/chat/completions" : "/completions");
+          headers = {
+            "content-type": "application/json",
+            authorization: "Bearer " + key,
+          };
+        }
+        try {
+          if (!hasProxy && !key)
+            throw new Error(
+              `Set your ${m.api_key_env} with the "Set API Key" button first.`,
+            );
+          const reply = await fetch(url, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(request),
+            signal: aborter.signal,
+          });
+          if (!reply.ok) throw new Error(await reply.text());
+          const reader = reply.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+            for (const line of lines) {
+              if (
+                !line.startsWith("data:") ||
+                line.slice(5).trim() === "[DONE]"
+              )
+                continue;
+              const event = JSON.parse(line.slice(5));
+              if (event.error) {
+                panes[0].err.textContent =
+                  typeof event.error === "string"
+                    ? event.error
+                    : JSON.stringify(event.error);
+                continue;
+              }
+              for (const choice of event.choices || []) {
+                if (panes[choice.index])
+                  showChoice(panes[choice.index], choice);
+              }
+            }
+          }
+        } catch (e) {
+          if (e.name !== "AbortError")
+            panes[0].err.textContent = e.message || String(e);
+        }
+        panes.forEach((pane) => {
+          pane.finish ||= aborter.signal.aborted ? "stopped" : "done";
+          updateStat(pane);
+        });
+      }
+
+      // One streamed choice: a chat delta (with optional reasoning) or a piece of a raw completion.
+      function showChoice(pane, choice) {
+        const reasoning =
+          choice.delta?.reasoning_content ?? choice.delta?.reasoning;
+        if (reasoning) {
+          pane.reasoning += reasoning;
+          pane.thinkBox.style.display = "";
+          pane.think.textContent = pane.reasoning;
+          pane.think.scrollTop = pane.think.scrollHeight;
+        }
+        // Per-token details come as a list for chat and as parallel lists for a raw completion.
+        const lp = choice.logprobs;
+        const scored =
+          lp?.content ??
+          (lp?.tokens || []).map((token, i) => ({
+            token,
+            logprob: lp.token_logprobs[i],
+            top_logprobs: alternatives(lp.top_logprobs?.[i]),
+          }));
+        const text = choice.delta ? choice.delta.content : choice.text;
+        if (text && scored.length && $("#probs").checked) {
+          for (const t of scored)
+            addToken(pane, t.token, t.logprob, t.top_logprobs);
+        } else if (text) {
+          // Shown as one piece: a token on its own can be half of a character.
+          const total = scored.length
+            ? scored.reduce((sum, t) => sum + t.logprob, 0)
+            : null;
+          addToken(pane, text, total);
+        }
+        if (choice.finish_reason) pane.finish = choice.finish_reason;
+        updateStat(pane);
+      }
+
+      function stopAll() {
+        aborters.forEach((aborter) => aborter.abort());
+        aborters = [];
+      }
+
+      function setRunning(on) {
+        $("#run").disabled = on;
+        $("#stopButton").disabled = !on;
+        $("#status").textContent = on ? "generating…" : "";
+        // Text typed while a completion streams in would end up in the middle of it.
+        $("#doc").contentEditable = on ? "false" : "plaintext-only";
+      }
+
+      // Start a fresh output area with one column per selected model.
+      function resetOutput(targets) {
+        const out = $("#out");
+        out.innerHTML = "";
+        out.style.setProperty("--ncol", targets.length);
+        return out;
+      }
+
+      function addColumn(out, heading) {
+        const col = document.createElement("div");
+        col.className = "col";
+        if (heading) col.innerHTML = `<h3>${heading}</h3>`;
+        out.appendChild(col);
+        return col;
+      }
+
+      function addGrid(col, n, extraClass = "") {
+        const grid = document.createElement("div");
+        grid.className = "grid" + extraClass + (n === 1 ? " one" : "");
+        col.appendChild(grid);
+        return grid;
+      }
+
+      // ---------- keeping typed text black ----------
+      // Generated text sits in green spans. A browser puts text typed inside or right after a span into
+      // that span, which would turn it green. So after each edit, every span is compared with its text
+      // from just before the edit, and whatever was added is moved out of the span as plain text.
+      function rememberGenerated() {
+        for (const span of $$("#doc .gen"))
+          span.textBeforeEdit = span.textContent;
+      }
+
+      // The text node and offset at a character position inside an element.
+      function textPosition(el, offset) {
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          if (offset <= node.length) return [node, offset];
+          offset -= node.length;
+        }
+      }
+
+      function moveTypedTextOut() {
+        for (const span of $$("#doc .gen")) {
+          const before = span.textBeforeEdit ?? "";
+          const now = span.textContent;
+          const shorter = Math.min(before.length, now.length);
+          let same = 0; // characters unchanged at the start
+          while (same < shorter && before[same] === now[same]) same++;
+          let sameEnd = 0; // characters unchanged at the end
+          while (
+            sameEnd < shorter - same &&
+            before.at(-1 - sameEnd) === now.at(-1 - sameEnd)
+          )
+            sameEnd++;
+          if (now.length - sameEnd <= same) continue; // nothing was added to this span
+          const range = document.createRange();
+          range.setStart(...textPosition(span, same));
+          range.setEnd(...textPosition(span, now.length - sameEnd));
+          const typed = document.createTextNode(
+            range.extractContents().textContent,
+          );
+          // The generated text after the typed text moves into a second green span.
+          range.setEnd(span, span.childNodes.length);
+          const rest = span.cloneNode(false);
+          rest.append(range.extractContents());
+          span.after(typed, rest);
+          for (const piece of [span, rest])
+            if (!piece.textContent) piece.remove();
+          getSelection().collapse(typed, typed.length);
+        }
+      }
+
+      // While an input method is composing a character, the document is left alone.
+      $("#doc").addEventListener(
+        "beforeinput",
+        (e) => e.isComposing || rememberGenerated(),
+      );
+      $("#doc").addEventListener("compositionstart", rememberGenerated);
+      $("#doc").addEventListener(
+        "input",
+        (e) => e.isComposing || moveTypedTextOut(),
+      );
+      $("#doc").addEventListener("compositionend", moveTypedTextOut);
+
+      // ---------- complete mode ----------
+      // A browser shows a line break at the very end of the document only if a second one follows it,
+      // and adds that second one itself when Enter is pressed there. It is not part of the prompt.
+      function hasExtraLineBreak() {
+        const last = $("#doc").lastChild;
+        return last?.nodeType === Node.TEXT_NODE && last.data.endsWith("\n");
+      }
+
+      function docText() {
+        const text = $("#doc").innerText;
+        return hasExtraLineBreak() ? text.slice(0, -1) : text;
+      }
+
+      // Text from a preset or a link gets the same extra line break that typing would have left.
+      function setDocText(text) {
+        $("#doc").textContent = text.endsWith("\n") ? text + "\n" : text;
+      }
+
+      async function runComplete() {
+        const prompt = docText();
+        const p = params();
+        const targets = selectedModels();
+        const out = resetOutput(targets);
+        // One completion from one model is appended to the document itself, in green.
+        const inline = p.n === 1 && targets.length === 1;
+        // The completion must follow the prompt exactly as it was sent.
+        if (inline && hasExtraLineBreak())
+          $("#doc").lastChild.data = $("#doc").lastChild.data.slice(0, -1);
+        const typing = document.activeElement === $("#doc");
+        setRunning(true);
+        await Promise.all(
+          targets.map((m) => {
+            let panes;
+            if (inline) {
+              const span = document.createElement("span");
+              span.className = "gen";
+              span.dataset.turn = Date.now(); // lets Clear turn find every piece if the span gets split
+              $("#doc").appendChild(span);
+              const col = addColumn(out);
+              const pane = makePane(col, m.name);
+              pane.body = span;
+              // Only the stats line and any error stay visible under the document.
+              pane.el.style.display = "none";
+              col.append(pane.el.querySelector(".meta"), pane.err);
+              panes = [pane];
+            } else {
+              const col = addColumn(out, m.name);
+              const grid = addGrid(col, p.n);
+              panes = Array.from({ length: p.n }, (_, i) =>
+                makePane(grid, `#${i + 1}`),
+              );
+              if (p.n > 1 && can(m, "logprobs")) {
+                const sort = document.createElement("button");
+                sort.className = "btn";
+                sort.textContent = "Sort by Σ logprob";
+                sort.onclick = () =>
+                  [...panes]
+                    .sort((x, y) => y.lp - x.lp)
+                    .forEach((pane) => grid.appendChild(pane.el));
+                col.insertBefore(sort, grid);
+              }
+              if (p.n > 1) tallyButton(col, grid, panes);
+            }
+            return generate(m, { prompt, ...p }, panes);
+          }),
+        );
+        setRunning(false);
+        // The document is read-only while running, which takes the caret away. Give it back, at the end.
+        if (typing) {
+          $("#doc").focus();
+          getSelection().collapse($("#doc"), $("#doc").childNodes.length);
+        }
+      }
+
+      // ---------- majority answer over n completions ----------
+      // The answer a completion ends on: the last \boxed{...}, else the last "#### ..." line, else the
+      // last number.
+      function finalAnswer(text) {
+        const boxed = [...text.matchAll(/\\boxed\{([^}]*)\}/g)];
+        if (boxed.length) return boxed.at(-1)[1].trim();
+        const hashed = text.match(/####\s*([^\n]+)/g);
+        if (hashed)
+          return hashed
+            .at(-1)
+            .replace(/^####\s*/, "")
+            .trim();
+        const numbers = text
+          .replace(/(\d),(?=\d{3})/g, "$1")
+          .match(/-?\d+(?:\.\d+)?/g);
+        return numbers ? numbers.at(-1) : "(no number)";
+      }
+
+      function tallyButton(col, grid, panes) {
+        const button = document.createElement("button");
+        button.className = "btn";
+        button.textContent = "Tally final answers";
+        const result = document.createElement("div");
+        result.className = "tally";
+        button.onclick = () => {
+          const counts = {};
+          for (const pane of panes) {
+            const answer = finalAnswer(pane.text);
+            counts[answer] = (counts[answer] || 0) + 1;
+          }
+          const sorted = Object.entries(counts).sort((x, y) => y[1] - x[1]);
+          const parts = sorted.map(([answer, count], i) => {
+            const part = `${esc(answer)} × ${count}`;
+            return i === 0 ? `<b>${part}</b>` : part;
+          });
+          result.innerHTML = `Majority vote: ${parts.join(", ")} (${panes.length} samples)`;
+        };
+        col.insertBefore(button, grid);
+        col.insertBefore(result, grid);
+      }
+
+      // ---------- requests only the proxy can answer ----------
+      function askProxy(path, m, body) {
+        return fetch(path, {
+          method: "POST",
+          headers: proxyHeaders(m),
+          body: JSON.stringify({ model: m.id, ...body }),
+        });
+      }
+
+      // ---------- score mode: surprisal and perplexity of a given text ----------
+      async function runScore() {
+        const text = $("#scoreIn").value;
+        if (!text.trim()) return;
+        const targets = selectedModels();
+        const out = resetOutput(targets);
+        setRunning(true);
+        await Promise.all(
+          targets.map(async (m) => {
+            const pane = makePane(addColumn(out), m.name);
+            pane.el.style.maxHeight = "none";
+            const reply = await askProxy("api/score", m, { text });
+            if (!reply.ok) {
+              pane.err.textContent = await reply.text();
+              return;
+            }
+            const scored = await reply.json();
+            let nll = 0;
+            let count = 0;
+            scored.tokens.forEach((token, i) => {
+              const lp = scored.logprobs[i];
+              if (lp != null) {
+                nll -= lp;
+                count++;
+              }
+              addToken(pane, token, lp, alternatives(scored.top[i]), true);
+            });
+            // The first token has no log-probability, so a text of one token has nothing to average.
+            const bits = count ? (nll / count / Math.LN2).toFixed(2) : "–";
+            const perplexity = count ? Math.exp(nll / count).toFixed(1) : "–";
+            pane.stat.textContent = `${scored.tokens.length} tokens, ${count} scored · cross-entropy ${bits} bits/token · perplexity ${perplexity}`;
+          }),
+        );
+        setRunning(false);
+      }
+
+      // ---------- chat mode ----------
+      // Text from a model or from a shared link is never trusted as HTML.
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+        );
+
+      function renderChat() {
+        $("#chat").innerHTML = messages
+          .map((m) => {
+            const thinking = m.reasoning
+              ? `<details class="think"><summary>thinking</summary><div class="tbody">${esc(m.reasoning)}</div></details>`
+              : "";
+            const cut = m.cut
+              ? '<div class="hint">Stopped at the Max tokens limit.</div>'
+              : "";
+            return `<div class="msg ${esc(m.role)}"><div class="role">${esc(m.role)}</div>${thinking}${esc(m.content)}${cut}</div>`;
+          })
+          .join("");
+      }
+
+      // The conversation as the endpoint expects it, optionally with a user message not yet sent.
+      function requestMessages(draft) {
+        const system = $("#system").value.trim();
+        return [
+          ...(system ? [{ role: "system", content: system }] : []),
+          ...messages.map(({ role, content }) => ({ role, content })),
+          ...(draft ? [{ role: "user", content: draft }] : []),
+        ];
+      }
+
+      async function runChat() {
+        const text = $("#userIn").value.trim();
+        if (text) {
+          messages.push({ role: "user", content: text });
+          $("#userIn").value = "";
+          renderChat();
+        }
+        if (!messages.length) return;
+        const p = params();
+        const targets = selectedModels();
+        const out = resetOutput(targets);
+        const accept = (pane) => {
+          const cut = pane.finish === "length";
+          messages.push({
+            role: "assistant",
+            content: pane.text,
+            reasoning: pane.reasoning,
+            cut,
+          });
+          renderChat();
+          out.innerHTML = "";
+        };
+        // A single response joins the conversation by itself. With several, the user clicks one.
+        const single = p.n === 1 && targets.length === 1;
+        const pick = single
+          ? ""
+          : " — click a response to continue the conversation with it";
+        let firstPane;
+        setRunning(true);
+        await Promise.all(
+          targets.map((m) => {
+            const col = addColumn(out, m.name + pick);
+            const grid = addGrid(col, p.n, " cands");
+            const panes = Array.from({ length: p.n }, (_, i) =>
+              makePane(grid, `#${i + 1}`),
+            );
+            for (const pane of panes) {
+              pane.el.onclick = () => {
+                if (!$("#run").disabled) accept(pane);
+              };
+            }
+            if (p.n > 1) tallyButton(col, grid, panes);
+            firstPane ??= panes[0];
+            return generate(m, { messages: requestMessages(), ...p }, panes);
+          }),
+        );
+        setRunning(false);
+        // A failed request stays on screen with its error instead of becoming an empty reply.
+        // So does a reply whose pane was cleared away, by Clear or a change of model, while it ran.
+        if (single && !firstPane.err.textContent && firstPane.el.isConnected)
+          accept(firstPane);
+      }
+
+      // ---------- inspect: rendered prompt and tokens ----------
+      async function inspect(kind) {
+        const m = modelOf($("#modelA"));
+        const box = $("#inspect");
+        const body =
+          mode === "chat"
+            ? { messages: requestMessages($("#userIn").value.trim()) }
+            : { prompt: mode === "score" ? $("#scoreIn").value : docText() };
+        const reply = await askProxy("api/tokenize", m, body);
+        box.style.display = "";
+        if (!reply.ok) {
+          box.textContent = await reply.text();
+          return;
+        }
+        const d = await reply.json();
+        if (kind === "prompt") {
+          box.innerHTML = `<b>${d.count} tokens — exact input to ${esc(m.name)}</b><pre style="white-space:pre-wrap;margin:6px 0 0">${esc(d.text)}</pre>`;
+        } else {
+          // Tokenizers mark a leading space with Ġ or ▁ and a newline with Ċ.
+          const chips = d.token_strs
+            .map(
+              (t) =>
+                `<span>${esc(t.replace(/Ġ|▁/g, "␣").replace(/Ċ/g, "↵"))}</span>`,
+            )
+            .join("");
+          box.innerHTML = `<b>${d.count} tokens — ${esc(m.name)} tokenizer</b><div class="chips" style="margin-top:6px">${chips}</div>`;
+        }
+      }
+
+      // ---------- presets ----------
+      $("#preset").innerHTML += PRESETS.map(
+        (p, i) => `<option value="${i}">${p.name}</option>`,
+      ).join("");
+      $("#preset").onchange = (e) => {
+        const preset = PRESETS[+e.target.value];
+        if (!preset) return;
+        setMode(preset.mode);
+        $("#temperature").value = preset.temperature;
+        $("#temperature").dispatchEvent(new Event("input"));
+        $("#stop").value = preset.stop || "";
+        if (preset.mode === "complete") setDocText(preset.prompt);
+        else if (preset.mode === "score") $("#scoreIn").value = preset.prompt;
+        else {
+          messages = [];
+          renderChat();
+          $("#userIn").value = preset.prompt;
+        }
+        onModelChange();
+        e.target.value = "";
+      };
+
+      // ---------- link to the current state ----------
+      function snapshot() {
+        const s = {
+          mode,
+          a: $("#modelA").value,
+          b: $("#modelB").value,
+          cmp: $("#compare").checked,
+          probs: $("#probs").checked,
+          stop: $("#stop").value,
+          seed: $("#seed").value,
+          effort: $("#reasoning_effort").value,
+          doc: docText(),
+          system: $("#system").value,
+          messages,
+          userIn: $("#userIn").value,
+          scoreIn: $("#scoreIn").value,
+        };
+        for (const k of NUMS) s[k] = $("#" + k).value;
+        return s;
+      }
+
+      function restore(s) {
+        setMode(s.mode);
+        // A link made on a page with other models keeps this page's selection for a model it lacks.
+        if (MODELS.some((m) => m.id === s.a)) $("#modelA").value = s.a;
+        if (MODELS.some((m) => m.id === s.b)) $("#modelB").value = s.b;
+        $("#compare").checked = s.cmp;
+        $("#bwrap").style.display = s.cmp ? "" : "none";
+        $("#probs").checked = s.probs;
+        $("#stop").value = s.stop;
+        $("#seed").value = s.seed;
+        $("#reasoning_effort").value = s.effort;
+        setDocText(s.doc);
+        $("#system").value = s.system;
+        $("#scoreIn").value = s.scoreIn || "";
+        messages = s.messages || [];
+        renderChat();
+        $("#userIn").value = s.userIn;
+        for (const k of NUMS) {
+          $("#" + k).value = s[k];
+          $("#" + k).dispatchEvent(new Event("input"));
+        }
+        onModelChange();
+      }
+
+      // The state travels in the part of the address after #, as base64 of UTF-8 JSON.
+      $("#share").onclick = () => {
+        location.hash = btoa(
+          unescape(encodeURIComponent(JSON.stringify(snapshot()))),
+        );
+        // Browsers offer the clipboard only on https and localhost.
+        navigator.clipboard?.writeText(location.href);
+        $("#status").textContent = navigator.clipboard
+          ? "link copied"
+          : "link is in the address bar";
+      };
+
+      // ---------- buttons ----------
+      $("#keysButton").onclick = () => $("#keysDialog").showModal();
+
+      function stopAndClearOutput() {
+        stopAll();
+        setRunning(false);
+        $("#out").innerHTML = "";
+      }
+
+      function dropAssistantMessages() {
+        messages = messages.filter((m) => m.role !== "assistant");
+        renderChat();
+      }
+
+      $$("#modeSeg button").forEach((button) => {
+        button.onclick = () => {
+          setMode(button.dataset.m);
+          onModelChange();
+        };
+      });
+      $("#compare").onchange = (e) => {
+        $("#bwrap").style.display = e.target.checked ? "" : "none";
+        onModelChange();
+      };
+      // Switching models drops everything a model wrote but keeps what the user typed.
+      $("#modelA").onchange = $("#modelB").onchange = () => {
+        stopAndClearOutput();
+        $("#inspect").style.display = "none";
+        $$("#doc .gen").forEach((span) => span.remove());
+        dropAssistantMessages();
+        onModelChange();
+      };
+      $("#run").onclick = () => {
+        stopAll();
+        $("#inspect").style.display = "none";
+        if (mode === "chat") runChat();
+        else if (mode === "score") runScore();
+        else runComplete();
+      };
+      $("#stopButton").onclick = () => {
+        stopAll();
+        setRunning(false);
+      };
+      $("#clear").onclick = () => {
+        stopAndClearOutput();
+        $("#inspect").style.display = "none";
+        $("#doc").textContent = "";
+        $("#scoreIn").value = "";
+        $("#userIn").value = "";
+        messages = [];
+        renderChat();
+      };
+      $("#clearTurn").onclick = () => {
+        stopAndClearOutput();
+        if (mode === "chat") {
+          if (messages.at(-1)?.role === "assistant") messages.pop();
+          if (messages.at(-1)?.role === "user") messages.pop();
+          renderChat();
+        } else {
+          const turn = $$("#doc .gen").at(-1)?.dataset.turn;
+          for (const span of $$("#doc .gen"))
+            if (span.dataset.turn === turn) span.remove();
+        }
+      };
+      $("#clearLlm").onclick = () => {
+        stopAndClearOutput();
+        if (mode === "chat") dropAssistantMessages();
+        else $$("#doc .gen").forEach((span) => span.remove());
+      };
+      $("#showPrompt").onclick = () => inspect("prompt");
+      $("#showTokens").onclick = () => inspect("tokens");
+      for (const input of [$("#userIn"), $("#doc")]) {
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && e.ctrlKey) $("#run").click();
+        });
+      }
+
+      loadModels().then(() => {
+        if (location.hash.length <= 1) return;
+        try {
+          restore(
+            JSON.parse(
+              decodeURIComponent(escape(atob(location.hash.slice(1)))),
+            ),
+          );
+        } catch (e) {
+          console.warn(e);
+        }
+      });
+    </script>
+  </body>
+</html>

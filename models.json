@@ -1,0 +1,581 @@
+{
+ "models": [
+  {
+   "id": "olmo3-7b-stage1",
+   "name": "Olmo 3 7B — stage 1 (pretraining)",
+   "kind": "base",
+   "base_url": "http://127.0.0.1:8001/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Ai2",
+    "Released": "Nov 2025",
+    "Parameters": "7.3B dense",
+    "Stage": "Pretraining, end of stage 1",
+    "Data": "Dolma 3 mix, 5.9T tokens of web, code, papers, books",
+    "Context": "8K at this stage",
+    "Objective": "Next-token prediction only",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "allenai/Olmo-3-1025-7B",
+    "revision": "stage1-step1413814",
+    "gpu": 1,
+    "util": 0.245,
+    "max_len": 8192
+   }
+  },
+  {
+   "id": "olmo3-7b-stage2",
+   "name": "Olmo 3 7B — stage 2 (mid-training)",
+   "kind": "base",
+   "base_url": "http://127.0.0.1:8002/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Ai2",
+    "Released": "Nov 2025",
+    "Parameters": "7.3B dense",
+    "Stage": "Mid-training, end of stage 2",
+    "Data": "Dolmino mix, 100B tokens heavy in math, code, QA and instruction data",
+    "Context": "8K at this stage",
+    "Objective": "Next-token prediction on a curated mix",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "allenai/Olmo-3-1025-7B",
+    "revision": "stage2-step47684",
+    "gpu": 1,
+    "util": 0.245,
+    "max_len": 8192
+   }
+  },
+  {
+   "id": "olmo3-7b-base",
+   "name": "Olmo 3 7B — stage 3 (long context) = Base",
+   "kind": "base",
+   "base_url": "http://127.0.0.1:8003/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Ai2",
+    "Released": "Nov 2025",
+    "Parameters": "7.3B dense",
+    "Stage": "Long-context extension, final base model",
+    "Data": "Longmino mix, 50B tokens of long documents",
+    "Context": "65K",
+    "Objective": "Next-token prediction with long documents",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "allenai/Olmo-3-1025-7B",
+    "revision": "main",
+    "gpu": 1,
+    "util": 0.245,
+    "max_len": 8192
+   }
+  },
+  {
+   "id": "olmo3-7b-think-sft",
+   "name": "Olmo 3 7B Think — SFT",
+   "kind": "think",
+   "base_url": "http://127.0.0.1:8004/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Ai2",
+    "Released": "Nov 2025",
+    "Parameters": "7.3B dense",
+    "Stage": "Post-training step 1: supervised fine-tuning",
+    "Data": "Dolci Think SFT: prompts with long reasoning traces and answers",
+    "Context": "65K",
+    "Objective": "Imitate reference chat and reasoning responses",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "allenai/Olmo-3-7B-Think-SFT",
+    "revision": "main",
+    "gpu": 1,
+    "util": 0.245,
+    "max_len": 8192,
+    "reasoning_parser": "olmo3"
+   }
+  },
+  {
+   "id": "olmo3-7b-think-dpo",
+   "name": "Olmo 3 7B Think — DPO",
+   "kind": "think",
+   "base_url": "http://127.0.0.1:8005/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Ai2",
+    "Released": "Nov 2025",
+    "Parameters": "7.3B dense",
+    "Stage": "Post-training step 2: direct preference optimization",
+    "Data": "Dolci Think DPO: chosen vs rejected response pairs",
+    "Context": "65K",
+    "Objective": "Prefer chosen over rejected responses",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "allenai/Olmo-3-7B-Think-DPO",
+    "revision": "main",
+    "gpu": 0,
+    "util": 0.3,
+    "max_len": 16384,
+    "reasoning_parser": "olmo3"
+   }
+  },
+  {
+   "id": "olmo3-7b-think",
+   "name": "Olmo 3 7B Think — RL (final)",
+   "kind": "think",
+   "base_url": "http://127.0.0.1:8006/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Ai2",
+    "Released": "Nov 2025",
+    "Parameters": "7.3B dense",
+    "Stage": "Post-training step 3: RL with verifiable rewards",
+    "Data": "Dolci Think RL: math, code and instruction prompts with checkable answers",
+    "Context": "65K",
+    "Objective": "Maximize verified correctness of the final answer",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "allenai/Olmo-3-7B-Think",
+    "revision": "main",
+    "gpu": 2,
+    "util": 0.25,
+    "max_len": 8192,
+    "reasoning_parser": "olmo3"
+   }
+  },
+  {
+   "id": "olmo3-7b-instruct",
+   "name": "Olmo 3 7B Instruct (final)",
+   "kind": "chat",
+   "base_url": "http://127.0.0.1:8007/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Ai2",
+    "Released": "Nov 2025",
+    "Parameters": "7.3B dense",
+    "Stage": "Post-training: SFT, DPO, RL tuned for short direct answers",
+    "Data": "Dolci Instruct SFT, DPO and RL sets",
+    "Context": "65K",
+    "Objective": "Helpful chat without long reasoning traces",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "allenai/Olmo-3-7B-Instruct",
+    "revision": "main",
+    "gpu": 2,
+    "util": 0.25,
+    "max_len": 8192
+   }
+  },
+  {
+   "id": "olmo3-7b-rlzero-math",
+   "name": "Olmo 3 7B RL-Zero (math)",
+   "kind": "chat",
+   "base_url": "http://127.0.0.1:8008/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Ai2",
+    "Released": "Nov 2025",
+    "Parameters": "7.3B dense",
+    "Stage": "RL with verifiable rewards applied directly to the base model, no SFT",
+    "Data": "Dolci RL-Zero Math",
+    "Context": "65K",
+    "Objective": "Learn reasoning from reward alone",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "allenai/Olmo-3-7B-RL-Zero-Math",
+    "revision": "main",
+    "gpu": 0,
+    "util": 0.3,
+    "max_len": 16384
+   }
+  },
+  {
+   "id": "gpt-oss-20b",
+   "name": "gpt-oss-20b (OpenAI, 2025)",
+   "kind": "think",
+   "base_url": "http://127.0.0.1:8009/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "effort_param": "reasoning_effort",
+   "stats": {
+    "Developer": "OpenAI",
+    "Released": "Aug 2025",
+    "Parameters": "21B total, 3.6B active, mixture of 32 experts",
+    "Stage": "Post-trained reasoning model, open weights",
+    "Data": "Undisclosed",
+    "Context": "128K",
+    "Objective": "Chat and tool use with adjustable reasoning effort",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "openai/gpt-oss-20b",
+    "revision": "main",
+    "gpu": 2,
+    "util": 0.22,
+    "max_len": 16384,
+    "reasoning_parser": "openai_gptoss"
+   }
+  },
+  {
+   "id": "gpt2-xl",
+   "name": "GPT-2 XL (2019)",
+   "kind": "base",
+   "base_url": "http://127.0.0.1:8010/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "OpenAI",
+    "Released": "Nov 2019",
+    "Parameters": "1.5B dense",
+    "Stage": "Pretraining only",
+    "Data": "WebText, 40GB of outbound Reddit links",
+    "Context": "1K",
+    "Objective": "Next-token prediction",
+    "License": "MIT"
+   },
+   "serve": {
+    "repo": "openai-community/gpt2-xl",
+    "revision": "main",
+    "gpu": 2,
+    "util": 0.07,
+    "max_len": 1024,
+    "dtype": "float16"
+   }
+  },
+  {
+   "id": "gpt-j-6b",
+   "name": "GPT-J 6B (2021)",
+   "kind": "base",
+   "base_url": "http://127.0.0.1:8011/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "EleutherAI",
+    "Released": "Jun 2021",
+    "Parameters": "6B dense",
+    "Stage": "Pretraining only, GPT-3 era open replication",
+    "Data": "The Pile, 400B tokens",
+    "Context": "2K",
+    "Objective": "Next-token prediction",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "EleutherAI/gpt-j-6b",
+    "revision": "float16",
+    "gpu": 3,
+    "util": 0.25,
+    "max_len": 2048
+   }
+  },
+  {
+   "id": "mistral-7b",
+   "name": "Mistral 7B v0.1 — base (2023)",
+   "kind": "base",
+   "base_url": "http://127.0.0.1:8012/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Mistral AI",
+    "Released": "Sep 2023",
+    "Parameters": "7.3B dense",
+    "Stage": "Pretraining only",
+    "Data": "Undisclosed",
+    "Context": "8K sliding window",
+    "Objective": "Next-token prediction",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "mistralai/Mistral-7B-v0.1",
+    "revision": "main",
+    "gpu": 3,
+    "util": 0.3,
+    "max_len": 8192
+   }
+  },
+  {
+   "id": "mistral-7b-instruct",
+   "name": "Mistral 7B Instruct v0.1 (2023)",
+   "kind": "chat",
+   "base_url": "http://127.0.0.1:8013/v1",
+   "caps": [
+    "completions",
+    "logprobs",
+    "echo",
+    "tokenize",
+    "n",
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties"
+   ],
+   "stats": {
+    "Developer": "Mistral AI",
+    "Released": "Sep 2023",
+    "Parameters": "7.3B dense",
+    "Stage": "Instruction fine-tuning only, no preference tuning",
+    "Data": "Public instruction datasets",
+    "Context": "8K sliding window",
+    "Objective": "Follow instructions in chat format",
+    "License": "Apache 2.0"
+   },
+   "serve": {
+    "repo": "mistralai/Mistral-7B-Instruct-v0.1",
+    "revision": "main",
+    "gpu": 3,
+    "util": 0.3,
+    "max_len": 8192
+   }
+  },
+  {
+   "id": "openai/gpt-oss-120b",
+   "name": "gpt-oss-120b (OpenAI, via OpenRouter)",
+   "kind": "think",
+   "base_url": "https://openrouter.ai/api/v1",
+   "api_key_env": "OPENROUTER_API_KEY",
+   "caps": [
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties",
+    "logprobs"
+   ],
+   "effort_param": "reasoning",
+   "stats": {
+    "Developer": "OpenAI",
+    "Released": "Aug 2025",
+    "Parameters": "117B total, 5.1B active, mixture of experts",
+    "Context": "128K",
+    "Access": "Open weights, hosted API",
+    "License": "Apache 2.0"
+   }
+  },
+  {
+   "id": "meta-llama/llama-3.3-70b-instruct",
+   "name": "Llama 3.3 70B Instruct (Meta, via OpenRouter)",
+   "kind": "chat",
+   "base_url": "https://openrouter.ai/api/v1",
+   "api_key_env": "OPENROUTER_API_KEY",
+   "caps": [
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "stop",
+    "penalties",
+    "logprobs"
+   ],
+   "stats": {
+    "Developer": "Meta",
+    "Released": "Dec 2024",
+    "Parameters": "70B dense",
+    "Context": "128K",
+    "Access": "Open weights, hosted API",
+    "License": "Llama 3.3 Community License"
+   }
+  },
+  {
+   "id": "google/gemini-3.8-flash",
+   "name": "Gemini 3.8 Flash (Google, via OpenRouter)",
+   "kind": "think",
+   "base_url": "https://openrouter.ai/api/v1",
+   "api_key_env": "OPENROUTER_API_KEY",
+   "caps": [
+    "temperature",
+    "top_p",
+    "seed",
+    "stop"
+   ],
+   "effort_param": "reasoning",
+   "stats": {
+    "Developer": "Google",
+    "Parameters": "undisclosed",
+    "Context": "1M",
+    "Access": "Closed weights, hosted API"
+   }
+  },
+  {
+   "id": "openai/gpt-6-luna",
+   "name": "GPT-6 Luna (OpenAI, via OpenRouter)",
+   "kind": "think",
+   "base_url": "https://openrouter.ai/api/v1",
+   "api_key_env": "OPENROUTER_API_KEY",
+   "caps": [
+    "seed"
+   ],
+   "effort_param": "reasoning",
+   "stats": {
+    "Developer": "OpenAI",
+    "Parameters": "undisclosed",
+    "Context": "1M",
+    "Access": "Closed weights, hosted API"
+   }
+  },
+  {
+   "id": "anthropic/claude-haiku-5.5",
+   "name": "Claude Haiku 5.5 (Anthropic, via OpenRouter)",
+   "kind": "think",
+   "base_url": "https://openrouter.ai/api/v1",
+   "api_key_env": "OPENROUTER_API_KEY",
+   "caps": [
+    "stop"
+   ],
+   "effort_param": "reasoning",
+   "stats": {
+    "Developer": "Anthropic",
+    "Parameters": "undisclosed",
+    "Context": "1M",
+    "Access": "Closed weights, hosted API"
+   }
+  }
+ ]
+}

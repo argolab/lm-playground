@@ -1,0 +1,29 @@
+[project]
+name = "lm-playground"
+version = "0.1.0"
+description = "A browser playground for sampling from language models through any OpenAI-compatible endpoint."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "httpx",
+    "python-dotenv",
+    "uvicorn[standard]",
+]
+
+[project.optional-dependencies]
+# Only needed to download and serve models on your own GPU.
+local = [
+    "huggingface-hub",
+    "vllm",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 100
